@@ -22,20 +22,20 @@ begin
 
 SPI_KELLO: process is 
 begin
-	wait for 1 us;		--1 us = 500kHz
-	if ChipE = '0' then
-	SPICLK <= NOT SPICLK;
-	else
-	SPICLK <= '0';
-	end if;
+    wait for 1 us;      --1 us = 500kHz
+    if ChipE = '0' then
+    SPICLK <= NOT SPICLK;
+    else
+    SPICLK <= '0';
+    end if;
 
 end process SPI_KELLO;
 
 
 SYSTEM_KELLO: process is 
 begin
-	wait for 500 ns;	--500 ns = 1 MHz
-	SCLK <= NOT SCLK;
+    wait for 500 ns;    --500 ns = 1 MHz
+    SCLK <= NOT SCLK;
 end process SYSTEM_KELLO;
 
 
@@ -53,14 +53,14 @@ end process;
 
 
 Joku : entity SPI_SLAVE
-	port map (
-		SI	=> SlaveIn,
-		SO	=> SlaveOut,
-		SCLK  	=> SPICLK,
-		sys_clk => SCLK,
-		ENABLE 	=> ChipE,
-        	parallel_data_in => SlaveParallelIn,
-        	parallel_data_out => SlaveParallelOut
-	);
+    port map (
+        SI  => SlaveIn,
+        SO  => SlaveOut,
+        SCLK    => SPICLK,
+        sys_clk => SCLK,
+        ENABLE  => ChipE,
+            parallel_data_in => SlaveParallelIn,
+            parallel_data_out => SlaveParallelOut
+    );
 
 end architecture;
