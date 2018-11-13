@@ -66,3 +66,4 @@ Joku : entity SPI_SLAVE
 end architecture;
 
 
+dkjfdsaflkasfdkm
