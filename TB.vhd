@@ -15,6 +15,8 @@ signal SPICLK : std_logic := '0';
 signal SCLK : std_logic := '0';
 signal ChipE : std_logic := '1';
 signal cmd : std_logic_vector (7 downto 0) := B"00001000";
+signal SlaveParallelIn : std_logic_vector (7 downto 0);
+signal SlaveParallelOut : std_logic_vector (7 downto 0);
 
 begin
 
@@ -38,7 +40,9 @@ Joku : entity SPI_SLAVE
 		SO	=> SlaveOut,
 		SCLK  	=> SPICLK,
 		sys_clk => SCLK,
-		ENABLE 	=> ChipE
+		ENABLE 	=> ChipE,
+        parallel_data_in => SlaveParallelIn,
+        parallel_data_out => SlaveParallelOut
 	);
 
 end architecture;
