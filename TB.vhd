@@ -68,7 +68,6 @@ asamdklaskdlasdlasda
 döas
 dl
 asdlas
-ldas
 dlasld
 asdlasasld
 awdawl
