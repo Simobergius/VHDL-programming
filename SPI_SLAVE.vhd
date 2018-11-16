@@ -6,12 +6,12 @@ use ieee.std_logic_unsigned.all;
 entity SPI_SLAVE is
     port(
         SI : in std_logic;
-        SO : out std_logic;
+        SO : out std_logic := 'Z';
         SCLK : in std_logic;
         ENABLE : in std_logic;
         sys_clk : in std_logic;
         parallel_data_in : in std_logic_vector(7 downto 0);
-        parallel_data_out : out std_logic_vector(7 downto 0)
+        parallel_data_out : out std_logic_vector(7 downto 0) := B"00000000"
         );
         
 end entity;
@@ -22,7 +22,7 @@ use work.edge_latch;
 
 type commands is (OP_READ, OP_WRITE, OP_READWRITE, OP_READ_OP, OP_NOP);
 
-signal cmd : commands;
+signal cmd : commands := OP_NOP;
 signal read_cmd : std_logic := '1';
 signal enable_triggered : std_logic := '0';
 signal enable_triggered_falling : std_logic := '0';
@@ -75,9 +75,11 @@ begin
             end if;
             
         when OP_READ => 
+            --Read data
             data_in(counter-8) <= SI;
         when OP_WRITE => NULL;
         when OP_READWRITE => 
+            --Read data
             data_in(counter-8) <= SI;
         when OP_NOP => NULL;
     end case;
