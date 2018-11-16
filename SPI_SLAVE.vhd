@@ -22,7 +22,6 @@ use work.edge_latch;
 
 type commands is (OP_READ, OP_WRITE, OP_READWRITE, OP_READ_OP, OP_NOP);
 
-signal reg : std_logic_vector(7 downto 0) := B"00110011";
 signal cmd : commands;
 signal read_cmd : std_logic := '1';
 signal enable_triggered : std_logic := '0';
@@ -95,15 +94,21 @@ begin
     wait until falling_edge(SCLK);
     
     case cmd is
-        when OP_READ_OP => NULL;
-        when OP_READ => NULL;
+        when OP_READ_OP => 
+            -- Put Slave Out into high impedance
+            SO <= 'Z';
+        when OP_READ => 
+            -- Put Slave Out into high impedance
+            SO <= 'Z';
             
         when OP_WRITE => 
             SO <= parallel_data_in(counter-8);
             
         when OP_READWRITE => 
             SO <= parallel_data_in(counter-8);
-        when OP_NOP => NULL;
+        when OP_NOP => 
+            -- Put Slave Out into high impedance
+            SO <= 'Z';
     end case;
     
     end process;
