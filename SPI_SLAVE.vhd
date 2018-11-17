@@ -77,12 +77,13 @@ begin
         end case;
         -- increment counter
         counter <= counter + 1;
-        if counter >= 16 then
-            counter <= 0;
-            parallel_data_out <= data_in;
-        end if;
         
-        if counter >= 16 then
+        if counter >= 15 then
+            -- Use data_in_local here because signal updates only after process finishes
+            data_in_local(7 downto 1) := data_in(7 downto 1);
+            data_in_local(7 - (counter - 8)) := SI;
+            counter <= 0;
+            parallel_data_out <= data_in_local;
             cmd <= OP_READ_OP;
         end if;
     else 
