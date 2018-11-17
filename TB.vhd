@@ -63,7 +63,7 @@ begin
         counter := 0;
         done <= '1';
     end if;
-        counter := counter + 1;
+    counter := counter + 1;
 end process;
 
 
