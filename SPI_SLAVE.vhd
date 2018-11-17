@@ -29,15 +29,37 @@ signal data_in : std_logic_vector(7 downto 0);
 begin
     
     process is
+    variable data_in_local : std_logic_vector (7 downto 0) := B"00000000";
     begin
     wait until rising_edge(SCLK);
     if ENABLE = '0' then
         case cmd is
             when OP_READ_OP =>
                 -- Read 8 cmd bits from SI port
+                -- 
                 if counter < 8 then
                     --Read bit from SI port
                     data_in(7 - counter) <= SI;
+                end if;
+                
+                -- We can determine command here, on 8th rising edge
+                -- but cant use signal because it doesnt update until next
+                -- cycle so use local variable
+                if counter = 7 then
+                    data_in_local(7 downto 1) := data_in(7 downto 1);
+                    data_in_local(8 - counter) := SI;
+                    if data_in_local = B"00000000" then 
+                        cmd <= OP_NOP;
+                    elsif data_in_local = B"00000001" then
+                        cmd <= OP_READ;
+                    elsif data_in_local = B"00000010" then
+                        cmd <= OP_WRITE;
+                    elsif data_in_local = B"00000011" then
+                        cmd <= OP_READWRITE;
+                    else
+                        cmd <= OP_NOP;
+                    end if;
+                    
                 end if;
                 
             when OP_READ => 
@@ -59,7 +81,12 @@ begin
             counter <= 0;
             parallel_data_out <= data_in;
         end if;
-    else
+        
+        if counter >= 16 then
+            cmd <= OP_READ_OP;
+        end if;
+    else 
+        cmd <= OP_READ_OP;
         counter <= 0;
     end if;
     end process;
@@ -72,21 +99,6 @@ begin
             when OP_READ_OP => 
                 -- Put Slave Out into high impedance
                 SO <= 'Z';
-                
-                if counter >= 8 then
-                    --Stop reading at eigth bit and plop command into signal
-                    if data_in = B"00000000" then 
-                        cmd <= OP_NOP;
-                    elsif data_in = B"00000001" then
-                        cmd <= OP_READ;
-                    elsif data_in = B"00000010" then
-                        cmd <= OP_WRITE;
-                    elsif data_in = B"00000011" then
-                        cmd <= OP_READWRITE;
-                    else
-                        cmd <= OP_NOP;
-                    end if;
-                end if;
                 
             when OP_READ => 
                 -- Put Slave Out into high impedance
@@ -107,11 +119,6 @@ begin
                 SO <= 'Z';
         end case;
         
-        if counter >= 16 then
-            cmd <= OP_READ_OP;
-        end if;
-    else 
-        cmd <= OP_READ_OP;
     end if;
     end process;
 
