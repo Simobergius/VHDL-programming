@@ -14,7 +14,7 @@ signal SlaveOut : std_logic := '0';
 signal SPICLK : std_logic := '0';
 signal SCLK : std_logic := '0';
 signal ChipE : std_logic := '1';
-signal cmd : std_logic_vector (7 downto 0) := B"01000000";
+signal cmd : std_logic_vector (7 downto 0) := B"00000010";
 signal SlaveParallelIn : std_logic_vector (7 downto 0) := B"10010001";
 signal SlaveParallelOut : std_logic_vector (7 downto 0);
 signal count_clk : integer := 0;
@@ -49,21 +49,48 @@ begin
 end process SYSTEM_KELLO;
 
 
-SEND_DATA: process is
+SEND_DATA: process (SPICLK, ChipE) is
 variable counter : integer := 0;
+variable prev_ChipE : std_logic := '1';
+variable prev_SPICLK : std_logic := '0';
 begin
-    wait until rising_edge(SPICLK);
-    if counter <= 7 then
-        SlaveIn <= cmd(counter);
-    else
-        SlaveIn <= slave_spi_in(counter - 8);
+    
+    if (prev_ChipE XOR ChipE) = '1' then
+        -- ChipE changed
+        if ChipE = '0' then
+            -- Falling edge of ChipE
+            -- Write first bit of cmd
+            SlaveIn <= cmd(counter);
+            counter := counter + 1;
+        end if;
     end if;
- 
+    
+    if (SPICLK XOR prev_SPICLK) = '1' then
+        --SPICLK changed state
+        if SPICLK = '0' then
+            -- SPICLK falling edge
+            -- write next bit of cmd
+            if counter <= 7 then
+                SlaveIn <= cmd(counter);
+            else
+                SlaveIn <= slave_spi_in(counter - 8);
+            end if;
+            counter := counter + 1;
+        end if;
+    end if;
+    prev_ChipE := ChipE;
+    prev_SPICLK := SPICLK;
+--    wait until rising_edge(SPICLK);
+--    if counter <= 7 then
+--        SlaveIn <= cmd(counter);
+--    else
+--        SlaveIn <= slave_spi_in(counter - 8);
+--    end if;
+-- 
     if counter = 15 then
         counter := 0;
         done <= '1';
     end if;
-    counter := counter + 1;
 end process;
 
 
