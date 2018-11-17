@@ -21,10 +21,6 @@ architecture behavior of SPI_SLAVE is
 type commands is (OP_READ, OP_WRITE, OP_READWRITE, OP_READ_OP, OP_NOP);
 
 signal cmd : commands := OP_READ_OP;
-signal read_cmd : std_logic := '1';
-signal enable_triggered : std_logic := '0';
-signal enable_triggered_falling : std_logic := '0';
-signal enable_triggered_rising : std_logic := '0';
 signal counter : integer := 0;
 signal data_in : std_logic_vector(7 downto 0);
 
