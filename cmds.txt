@@ -1,0 +1,6 @@
+SPI Slave commands:
+
+0x00: NOP: no operation
+0x01: READ: Read next 8 bits from SI into slave_parallel_out
+0x02: WRITE: Write 8 bits from slave_parallel_in into SO
+0x03: READWRITE: READ and WRITE combined
