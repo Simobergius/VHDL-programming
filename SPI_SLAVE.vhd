@@ -83,7 +83,9 @@ begin
             data_in_local(7 downto 1) := data_in(7 downto 1);
             data_in_local(7 - (counter - 8)) := SI;
             counter <= 0;
-            parallel_data_out <= data_in_local;
+            if cmd = OP_READWRITE or cmd = OP_READ then
+                parallel_data_out <= data_in_local;
+            end if;
             cmd <= OP_READ_OP;
         end if;
     else 
