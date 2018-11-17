@@ -47,7 +47,7 @@ begin
                 -- cycle so use local variable
                 if counter = 7 then
                     data_in_local(7 downto 1) := data_in(7 downto 1);
-                    data_in_local(8 - counter) := SI;
+                    data_in_local(7 - counter) := SI;
                     if data_in_local = B"00000000" then 
                         cmd <= OP_NOP;
                     elsif data_in_local = B"00000001" then
