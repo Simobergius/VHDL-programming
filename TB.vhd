@@ -37,7 +37,7 @@ end process SPI_KELLO;
 
 SYSTEM_KELLO: process is 
 begin
-    wait for 500 ns;    --500 ns = 1 MHz
+    wait for 250 ns;    --500 ns = 1 MHz
     SCLK <= NOT SCLK;
     count_clk <= count_clk + 1;
     if count_clk = 50 then
@@ -58,11 +58,12 @@ begin
     else
         SlaveIn <= slave_spi_in(counter - 8);
     end if;
-    counter := counter + 1;
+ 
     if counter = 15 then
         counter := 0;
         done <= '1';
     end if;
+        counter := counter + 1;
 end process;
 
 
