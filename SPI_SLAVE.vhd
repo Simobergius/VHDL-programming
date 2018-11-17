@@ -37,16 +37,20 @@ begin
                 -- Read 8 cmd bits from SI port
                 if counter < 8 then
                     --Read bit from SI port
-                    data_in(counter) <= SI;
+                    data_in(7 - counter) <= SI;
                 end if;
                 
             when OP_READ => 
                 --Read data
-                data_in(counter-8) <= SI;
+                if counter < 16 then
+                    data_in(7 - (counter-8)) <= SI;
+                end if;
             when OP_WRITE => NULL;
             when OP_READWRITE => 
                 --Read data
-                data_in(counter-8) <= SI;
+                if counter < 16 then
+                    data_in(7 - (counter-8)) <= SI;
+                end if;
             when OP_NOP => NULL;
         end case;
         -- increment counter
@@ -89,15 +93,23 @@ begin
                 SO <= 'Z';
                 
             when OP_WRITE => 
-                SO <= parallel_data_in(counter-8);
+                if counter < 16 then
+                    SO <= parallel_data_in(counter-8);
+                end if;
                 
             when OP_READWRITE => 
-                SO <= parallel_data_in(counter-8);
+                if counter < 16 then
+                    SO <= parallel_data_in(counter-8);
+                end if;
                 
             when OP_NOP => 
                 -- Put Slave Out into high impedance
                 SO <= 'Z';
         end case;
+        
+        if counter >= 16 then
+            cmd <= OP_READ_OP;
+        end if;
     else 
         cmd <= OP_READ_OP;
     end if;
