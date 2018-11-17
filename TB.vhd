@@ -14,7 +14,7 @@ signal SlaveOut : std_logic := '0';
 signal SPICLK : std_logic := '0';
 signal SCLK : std_logic := '0';
 signal ChipE : std_logic := '1';
-signal cmd : std_logic_vector (7 downto 0) := B"01000000";
+signal cmd : std_logic_vector (7 downto 0) := B"00000010";
 signal SlaveParallelIn : std_logic_vector (7 downto 0) := B"10010001";
 signal SlaveParallelOut : std_logic_vector (7 downto 0);
 signal count_clk : integer := 0;
