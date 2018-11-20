@@ -64,6 +64,7 @@ begin
 end process SYSTEM_KELLO;
 
 
+
 SEND_DATA: process is
 begin
     wait until rising_edge(SPICLK);
@@ -75,6 +76,46 @@ begin
     end if;
  
     counter <= counter + 1;
+
+SEND_DATA: process (SPICLK, ChipE) is
+variable counter : integer := 0;
+variable prev_ChipE : std_logic := '1';
+variable prev_SPICLK : std_logic := '0';
+begin
+    
+    if (prev_ChipE XOR ChipE) = '1' then
+        -- ChipE changed
+        if ChipE = '0' then
+            -- Falling edge of ChipE
+            -- Write first bit of cmd
+            SlaveIn <= cmd(counter);
+            counter := counter + 1;
+        end if;
+    end if;
+    
+    if (SPICLK XOR prev_SPICLK) = '1' then
+        --SPICLK changed state
+        if SPICLK = '0' then
+            -- SPICLK falling edge
+            -- write next bit of cmd
+            if counter <= 7 then
+                SlaveIn <= cmd(counter);
+            else
+                SlaveIn <= slave_spi_in(counter - 8);
+            end if;
+            counter := counter + 1;
+        end if;
+    end if;
+    prev_ChipE := ChipE;
+    prev_SPICLK := SPICLK;
+    wait until rising_edge(SPICLK);
+    if counter <= 7 then
+        SlaveIn <= cmd(counter);
+    else
+        SlaveIn <= slave_spi_in(counter - 8);
+    end if;
+ 
+
     if counter = 15 then
         counter <= 0;
         done <= '1';
