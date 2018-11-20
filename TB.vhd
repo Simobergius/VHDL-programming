@@ -15,11 +15,13 @@ signal SPICLK : std_logic := '0';
 signal SCLK : std_logic := '0';
 signal ChipE : std_logic := '1';
 signal cmd : std_logic_vector (7 downto 0) := B"00000000"; --MSB first
-signal SlaveParallelIn : std_logic_vector (7 downto 0) := B"10010001";
+signal SlaveParallelIn : std_logic_vector (7 downto 0) := B"10100001";
 signal SlaveParallelOut : std_logic_vector (7 downto 0);
 signal count_clk : integer := 0;
 signal slave_spi_in : std_logic_vector (7 downto 0) := B"01110110";
 signal counter : integer := 0;
+signal prevChipE : std_logic := '1';
+signal prevSPICLK : std_logic := '0';
 
 begin
 
@@ -39,68 +41,107 @@ SYSTEM_KELLO: process is
 begin
     wait for 500 ns;            --500 ns = 1 MHz
     SCLK <= NOT SCLK;
+    count_clk <= count_clk + 1;
+    
+    if count_clk = 36 then
+        count_clk <= 0;
+    end if;
     
 end process SYSTEM_KELLO;
+
+
+
 
 ChangeCMD: process is
 begin
     wait until rising_edge(SCLK);
     if counter = 0 then
-        wait for 2 us;
     end if;
     
-    if counter = 15 OR cmd = B"00000000" then
+    if count_clk = 35 then
         
         if cmd = B"00000000" then   --If cmd = 0, skip to next cmd
-            cmd <= B"10000000";
-            ChipE <= '1';
-        elsif cmd = B"10000000" then
-            wait for 2 us;
-            cmd <= B"01000000";
-            ChipE <= '1';
-        elsif cmd = B"01000000" then
-            wait for 2 us;
-            cmd <= B"11000000";
-            ChipE <= '1';
+            cmd <= B"00000001";
+            ChipE <= '0';
+        elsif cmd = B"00000001" then
+            cmd <= B"00000010";
+            ChipE <= '0';
+        elsif cmd = B"00000010" then
+            cmd <= B"00000011";
+            ChipE <= '0';
         else
-            wait for 2 us;
             cmd <= B"00000000";
-            ChipE <= '1';
+            ChipE <= '0';
         end if;
-    else
-        ChipE <= '0';
+    
+    elsif counter > 16 then
+        ChipE <= '1';   
     end if;
+
 
 end process ChangeCMD;
 
-
-SEND_DATA: process is
+process (ChipE, SPICLK) is
 begin
-    wait until rising_edge(SPICLK);
-    if counter <= 7 then
-        SlaveIn <= cmd(counter);
-    else
-        SlaveIn <= slave_spi_in(counter - 8);
-    end if;
-    
-    if counter < 15 then
-    counter <= counter + 1;
-    end if;
-    
-    wait until rising_edge(SCLK);
-     if counter = 15 then
-     wait for 2 us;
+    if prevChipE = '1' AND ChipE = '0' then     --ChipE laskureuna
+        if counter <= 7 then
+            SlaveIn <= cmd(7 - counter);
+        elsif counter < 16 then 
+            SlaveIn <= slave_spi_in(7 - (counter - 8));
+        end if;
+        counter <= counter + 1;
+        
+    elsif prevChipE = '0' AND ChipE = '1' then  --ChipE nousureuna
         counter <= 0;
     end if;
-    
+        
+    if prevSPICLK = '1' AND SPICLK = '0' then     --SPICLK laskureuna
+        if counter <= 7 then
+            SlaveIn <= cmd(7 - counter);
+        elsif counter < 16 then
+            SlaveIn <= slave_spi_in(7 - (counter - 8));
+        elsif counter >= 16 then
+            SlaveIn <= '0';
+        end if;
+        counter <= counter + 1;
+    end if;
+
+    prevChipE <= ChipE;
+    prevSPICLK <= SPICLK;
+
+
+
 end process;
+
+
+
+
+--SEND_DATA: process is
+--begin
+--    wait until rising_edge(SPICLK);
+--    if counter <= 7 then
+--        SlaveIn <= cmd(counter);
+--    else
+--        SlaveIn <= slave_spi_in(counter - 8);
+--    end if;
+--    
+--    if counter < 15 then
+--    counter <= counter + 1;
+--    end if;
+--    
+--    wait until rising_edge(SCLK);
+--     if counter = 15 then
+--     wait for 2 us;
+--        counter <= 0;
+--    end if;
+--    
+--end process;
 
 Joku : entity SPI_SLAVE
     port map (
         SI  => SlaveIn,
         SO  => SlaveOut,
         SCLK    => SPICLK,
-        sys_clk => SCLK,
         ENABLE  => ChipE,
         parallel_data_in => SlaveParallelIn,
         parallel_data_out => SlaveParallelOut
