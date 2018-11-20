@@ -53,6 +53,7 @@ begin
         ChipE <= '0';           --Start operation
         end if;
     end if;
+<<<<<<< HEAD
     if (prev_ChipE XOR ChipE) = '1' then
         -- ChipE changed
         if ChipE = '0' then
@@ -63,6 +64,8 @@ begin
         else
             --Rising edge of ChipE
             counter := 0;
+=======
+>>>>>>> parent of 55125b4... Hopeful TB update
     if counter = 16 AND SPICLK = '0' then
         ChipE <= '1';
         count_clk <= 0;
@@ -88,6 +91,7 @@ begin
     else
         SlaveIn <= slave_spi_in(counter - 8);
     end if;
+<<<<<<< HEAD
     if (SPICLK XOR prev_SPICLK) = '1' then
         --SPICLK changed state
         if SPICLK = '0' then
@@ -116,6 +120,8 @@ begin
     if counter = 17 then
         counter := 0;
         done <= '1';
+=======
+>>>>>>> parent of 55125b4... Hopeful TB update
  
     counter <= counter + 1;
 
