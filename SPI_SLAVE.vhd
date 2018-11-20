@@ -9,7 +9,6 @@ entity SPI_SLAVE is
         SO : out std_logic := 'Z';
         SCLK : in std_logic;
         ENABLE : in std_logic;
-        sys_clk : in std_logic;
         parallel_data_in : in std_logic_vector(7 downto 0);
         parallel_data_out : out std_logic_vector(7 downto 0) := B"00000000"
         );
@@ -109,12 +108,12 @@ begin
                 
             when OP_WRITE => 
                 if counter < 16 then
-                    SO <= parallel_data_in(counter-8);
+                    SO <= parallel_data_in(7 - (counter-8));
                 end if;
                 
             when OP_READWRITE => 
                 if counter < 16 then
-                    SO <= parallel_data_in(counter-8);
+                    SO <= parallel_data_in(7 - (counter-8));
                 end if;
                 
             when OP_NOP => 
