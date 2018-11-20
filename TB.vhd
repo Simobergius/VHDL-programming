@@ -53,27 +53,6 @@ begin
         ChipE <= '0';           --Start operation
         end if;
     end if;
-<<<<<<< HEAD
-    
---<<<<<<< Updated upstream
---    if counter = 15 OR cmd = B"00000000" then
---        
---        if cmd = B"00000000" then   --If cmd = 0, skip to next cmd
---            cmd <= B"10000000";
---            ChipE <= '1';
---        elsif cmd = B"10000000" then
---            wait for 2 us;
---            cmd <= B"01000000";
---            ChipE <= '1';
---        elsif cmd = B"01000000" then
---            wait for 2 us;
---            cmd <= B"11000000";
---            ChipE <= '1';
---        else
---            wait for 2 us;
---            cmd <= B"00000000";
---            ChipE <= '1';
---=======
     if (prev_ChipE XOR ChipE) = '1' then
         -- ChipE changed
         if ChipE = '0' then
@@ -84,8 +63,6 @@ begin
         else
             --Rising edge of ChipE
             counter := 0;
--->>>>>>> Stashed changes
-=======
     if counter = 16 AND SPICLK = '0' then
         ChipE <= '1';
         count_clk <= 0;
@@ -96,7 +73,6 @@ begin
             cmd <= B"11000000";
         else
             cmd <= B"00000000";
->>>>>>> parent of 55125b4... Hopeful TB update
         end if;
     end if;
 end process SYSTEM_KELLO;
@@ -112,18 +88,6 @@ begin
     else
         SlaveIn <= slave_spi_in(counter - 8);
     end if;
-<<<<<<< HEAD
-    
---<<<<<<< Updated upstream
---    if counter < 15 then
---    counter <= counter + 1;
---    end if;
---    
---    wait until rising_edge(SCLK);
---     if counter = 15 then
---     wait for 2 us;
---        counter <= 0;
---=======
     if (SPICLK XOR prev_SPICLK) = '1' then
         --SPICLK changed state
         if SPICLK = '0' then
@@ -152,8 +116,6 @@ begin
     if counter = 17 then
         counter := 0;
         done <= '1';
--->>>>>>> Stashed changes
-=======
  
     counter <= counter + 1;
 
@@ -199,7 +161,6 @@ begin
     if counter = 15 then
         counter <= 0;
         done <= '1';
->>>>>>> parent of 55125b4... Hopeful TB update
     end if;
 end process;
 
