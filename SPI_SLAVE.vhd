@@ -18,15 +18,9 @@ end entity;
 
 architecture behavior of SPI_SLAVE is
 
-use work.edge_latch;
-
 type commands is (OP_READ, OP_WRITE, OP_READWRITE, OP_READ_OP, OP_NOP);
 
 signal cmd : commands := OP_READ_OP;
-signal read_cmd : std_logic := '1';
-signal enable_triggered : std_logic := '0';
-signal enable_triggered_falling : std_logic := '0';
-signal enable_triggered_rising : std_logic := '0';
 signal counter : integer := 0;
 signal data_in : std_logic_vector(7 downto 0);
 
@@ -34,94 +28,101 @@ signal data_in : std_logic_vector(7 downto 0);
 
 begin
     
-    process (sys_clk) is
-    begin
-    if enable_triggered = '1' then
-        if ENABLE = '0' then
-            enable_triggered_falling <= '1';
-            enable_triggered_rising <= '0';
-        else
-            enable_triggered_falling <= '0';
-            enable_triggered_rising <= '1';
-        end if;
-    end if;
-    end process;
-    
     process is
+    variable data_in_local : std_logic_vector (7 downto 0) := B"00000000";
     begin
     wait until rising_edge(SCLK);
     if ENABLE = '0' then
         case cmd is
             when OP_READ_OP =>
-                -- Read 8 bits from SI port
-                if counter = 8 then
-                    --Stop reading at eigth bit and plop command into signal
-                    if data_in = B"00000000" then 
+                -- Read 8 cmd bits from SI port
+                -- 
+                if counter < 8 then
+                    --Read bit from SI port
+                    data_in(7 - counter) <= SI;
+                end if;
+                
+                -- We can determine command here, on 8th rising edge
+                -- but cant use signal because it doesnt update until next
+                -- cycle so use local variable
+                if counter = 7 then
+                    data_in_local(7 downto 1) := data_in(7 downto 1);
+                    data_in_local(7 - counter) := SI;
+                    if data_in_local = B"00000000" then 
                         cmd <= OP_NOP;
-                    elsif data_in = B"00000001" then
+                    elsif data_in_local = B"00000001" then
                         cmd <= OP_READ;
-                    elsif data_in = B"00000010" then
+                    elsif data_in_local = B"00000010" then
                         cmd <= OP_WRITE;
-                    elsif data_in = B"00000011" then
+                    elsif data_in_local = B"00000011" then
                         cmd <= OP_READWRITE;
                     else
                         cmd <= OP_NOP;
                     end if;
-                else
-                    --Read bit from SI port
-                    data_in(counter) <= SI;
+                    
                 end if;
                 
             when OP_READ => 
                 --Read data
-                data_in(counter-8) <= SI;
+                if counter < 16 then
+                    data_in(7 - (counter-8)) <= SI;
+                end if;
             when OP_WRITE => NULL;
             when OP_READWRITE => 
                 --Read data
-                data_in(counter-8) <= SI;
+                if counter < 16 then
+                    data_in(7 - (counter-8)) <= SI;
+                end if;
             when OP_NOP => NULL;
         end case;
         -- increment counter
         counter <= counter + 1;
-        if counter >= 16 then
+        
+        if counter >= 15 then
+            -- Use data_in_local here because signal updates only after process finishes
+            data_in_local(7 downto 1) := data_in(7 downto 1);
+            data_in_local(7 - (counter - 8)) := SI;
             counter <= 0;
-            parallel_data_out <= data_in;
+            if cmd = OP_READWRITE or cmd = OP_READ then
+                parallel_data_out <= data_in_local;
+            end if;
+            cmd <= OP_READ_OP;
         end if;
-    else
-        counter <= 0;
+    else 
         cmd <= OP_READ_OP;
+        counter <= 0;
     end if;
     end process;
     
     process is
     begin
     wait until falling_edge(SCLK);
-    
-    case cmd is
-        when OP_READ_OP => 
-            -- Put Slave Out into high impedance
-            SO <= 'Z';
-        when OP_READ => 
-            -- Put Slave Out into high impedance
-            SO <= 'Z';
-            
-        when OP_WRITE => 
-            SO <= parallel_data_in(counter-8);
-            
-        when OP_READWRITE => 
-            SO <= parallel_data_in(counter-8);
-        when OP_NOP => 
-            -- Put Slave Out into high impedance
-            SO <= 'Z';
-    end case;
-    
+    if ENABLE = '0' then
+        case cmd is
+            when OP_READ_OP => 
+                -- Put Slave Out into high impedance
+                SO <= 'Z';
+                
+            when OP_READ => 
+                -- Put Slave Out into high impedance
+                SO <= 'Z';
+                
+            when OP_WRITE => 
+                if counter < 16 then
+                    SO <= parallel_data_in(counter-8);
+                end if;
+                
+            when OP_READWRITE => 
+                if counter < 16 then
+                    SO <= parallel_data_in(counter-8);
+                end if;
+                
+            when OP_NOP => 
+                -- Put Slave Out into high impedance
+                SO <= 'Z';
+        end case;
+        
+    end if;
     end process;
-
-CSedgedetector : entity edge_latch
-    port map(
-        sys_clk => sys_clk,
-        D_in => ENABLE,
-        D_out => enable_triggered
-        );
 
 end architecture;
