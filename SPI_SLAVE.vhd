@@ -3,7 +3,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 
-entity SPI_SLAVE is
+entity SPI is
     port(
         SI : in std_logic;
         SO : out std_logic := 'Z';
@@ -15,7 +15,7 @@ entity SPI_SLAVE is
         
 end entity;
 
-architecture behavior of SPI_SLAVE is
+architecture behavior of SPI is
 
 type commands is (OP_READ, OP_WRITE, OP_READWRITE, OP_READ_OP, OP_NOP);
 

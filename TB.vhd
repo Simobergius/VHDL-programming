@@ -7,7 +7,7 @@ end entity SPI_TestBench;
 
 architecture top_level of SPI_TestBench is
 
-use work.SPI_SLAVE;
+use work.SPI;
 
 signal SlaveIn : std_logic := '0';
 signal SlaveOut : std_logic := '0';
@@ -137,7 +137,7 @@ end process;
 --    
 --end process;
 
-Joku : entity SPI_SLAVE
+Joku : entity SPI
     port map (
         SI  => SlaveIn,
         SO  => SlaveOut,
