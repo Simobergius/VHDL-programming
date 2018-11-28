@@ -11,6 +11,8 @@ const int slaveSelectPin = 3;
 
 void setup() {
   pinMode(slaveSelectPin, OUTPUT);
+  pinMode(12, OUTPUT);
+  pinMode(13, OUTPUT);
   SPI.begin();
   SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
 }
