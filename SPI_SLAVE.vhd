@@ -10,7 +10,10 @@ entity SPI is
         SCLK : in std_logic;
         ENABLE : in std_logic;
         parallel_data_in : in std_logic_vector(7 downto 0);
-        parallel_data_out : out std_logic_vector(7 downto 0) := B"00000000"
+        parallel_data_out : out std_logic_vector(7 downto 0) := B"00000000";
+        debug_en : out std_logic;
+        debug_state : out std_logic_vector(1 downto 0);
+        debug_sclk : out std_logic
         );
         
 end entity;
