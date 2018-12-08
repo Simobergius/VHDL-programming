@@ -9,7 +9,7 @@ architecture top_level of SPI_TestBench is
 
 use work.SPI;
 
-signal SlaveIn : std_logic := '0';
+signal SlaveIn : std_logic := '1';
 signal SlaveOut : std_logic := '0';
 signal SPICLK : std_logic := '0';
 signal SCLK : std_logic := '0';
@@ -49,9 +49,6 @@ begin
     
 end process SYSTEM_KELLO;
 
-
-
-
 ChangeCMD: process is
 begin
     wait until rising_edge(SCLK);
@@ -61,16 +58,16 @@ begin
     if count_clk = 35 then
         
         if cmd = B"00000000" then   --If cmd = 0, skip to next cmd
-            cmd <= B"00000001";
+            cmd <= B"00000001"; -- OP_READ
             ChipE <= '0';
         elsif cmd = B"00000001" then
-            cmd <= B"00000010";
+            cmd <= B"00000010"; -- OP_WRITE
             ChipE <= '0';
         elsif cmd = B"00000010" then
-            cmd <= B"00000011";
+            cmd <= B"00000011"; -- OP_READWRITE
             ChipE <= '0';
         else
-            cmd <= B"00000000";
+            cmd <= B"00000000"; -- OP_NOP
             ChipE <= '0';
         end if;
     
@@ -101,7 +98,7 @@ begin
         elsif counter < 16 then
             SlaveIn <= slave_spi_in(7 - (counter - 8));
         elsif counter >= 16 then
-            SlaveIn <= '0';
+            SlaveIn <= '1';
         end if;
         counter <= counter + 1;
     end if;
@@ -113,38 +110,17 @@ begin
 
 end process;
 
-
-
-
---SEND_DATA: process is
---begin
---    wait until rising_edge(SPICLK);
---    if counter <= 7 then
---        SlaveIn <= cmd(counter);
---    else
---        SlaveIn <= slave_spi_in(counter - 8);
---    end if;
---    
---    if counter < 15 then
---    counter <= counter + 1;
---    end if;
---    
---    wait until rising_edge(SCLK);
---     if counter = 15 then
---     wait for 2 us;
---        counter <= 0;
---    end if;
---    
---end process;
-
-Joku : entity SPI
+Slave : entity SPI
     port map (
         SI  => SlaveIn,
         SO  => SlaveOut,
         SCLK    => SPICLK,
         ENABLE  => ChipE,
         parallel_data_in => SlaveParallelIn,
-        parallel_data_out => SlaveParallelOut
+        parallel_data_out => SlaveParallelOut,
+        debug_en => open,
+        debug_state => open,
+        debug_sclk => open
     );
 
 end architecture;
