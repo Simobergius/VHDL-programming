@@ -13,9 +13,8 @@ end entity;
 architecture behavior of edge_latch is
 signal last_D : std_logic;
 begin
-process is
+process (sys_clk) is
 begin
-wait until falling_edge(sys_clk);
 D_out <= D_in xor last_D;
 last_D <= D_in;
 end process;
