@@ -15,7 +15,9 @@ signal last_D : std_logic;
 begin
 process (sys_clk) is
 begin
+if falling_edge(sys_clk) then
 D_out <= D_in xor last_D;
 last_D <= D_in;
+end if;
 end process;
 end architecture;

@@ -27,7 +27,7 @@ begin
 
 SPI_KELLO: process is 
 begin
-    wait for 1 us;      --1 us = 500kHz
+    wait for 50 ns;      --1 us = 500kHz
     if ChipE = '0' then
     SPICLK <= NOT SPICLK;
     else
@@ -39,7 +39,7 @@ end process SPI_KELLO;
 
 SYSTEM_KELLO: process is 
 begin
-    wait for 500 ns;            --500 ns = 1 MHz
+    wait for 10 ns;            --500 ns = 1 MHz
     SCLK <= NOT SCLK;
     count_clk <= count_clk + 1;
     
@@ -112,6 +112,7 @@ end process;
 
 Slave : entity SPI
     port map (
+        CLK => SCLK,
         SI  => SlaveIn,
         SO  => SlaveOut,
         SCLK    => SPICLK,
